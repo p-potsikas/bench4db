@@ -210,6 +210,21 @@ git clone https://github.com/p-potsikas/bench4db.git
 cd bench4db
 ```
 
+## 🧱 Client Setup
+
+Create and activate a virtual environment:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Install the current runtime dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
 ## ▶️ Running the Application
 
 From the project root:
@@ -223,3 +238,87 @@ If you are using the project virtual environment:
 ```bash
 .venv/bin/python app.py
 ```
+
+## 🛰️ Remote Metrics Agent
+
+The project also includes a lightweight remote metrics agent for the database server machine.
+
+This is useful when:
+
+- the PostgreSQL server runs on a different host
+- you want server-side CPU and RAM metrics
+- you want server-side disk and network metrics
+- you want PostgreSQL connection count from the remote host
+
+The agent file is:
+
+```bash
+bench4db_agent.py
+```
+
+### Running the Agent on the Database Server
+
+You can start it directly with:
+
+```bash
+python bench4db_agent.py
+```
+
+By default, it listens on:
+
+```text
+http://0.0.0.0:8765
+```
+
+### Optional Environment Variables
+
+The agent supports the following environment variables:
+
+- `BENCH4DB_AGENT_HOST`
+- `BENCH4DB_AGENT_PORT`
+- `BENCH4DB_AGENT_TOKEN`
+- `BENCH4DB_PG_DSN`
+
+Example:
+
+```bash
+export BENCH4DB_AGENT_HOST=0.0.0.0
+export BENCH4DB_AGENT_PORT=8765
+export BENCH4DB_AGENT_TOKEN=my-secret-token
+export BENCH4DB_PG_DSN="host=127.0.0.1 port=5432 dbname=postgres user=postgres password=secret"
+python bench4db_agent.py
+```
+
+### Agent Endpoints
+
+The current agent exposes:
+
+- `/health`
+- `/metrics`
+
+### Connecting the UI to the Agent
+
+In the `Workload Setup` step, the UI currently includes:
+
+- `Remote agent URL`
+- `Remote agent token`
+
+Example URL:
+
+```text
+http://192.168.1.50:8765
+```
+
+Once configured, the benchmark client will poll the remote agent during the run and display:
+
+- server CPU
+- server RAM
+- server network
+- server disk
+- PostgreSQL active connections
+
+These values are also included in:
+
+- the live run view
+- the final results panel
+- the report popup
