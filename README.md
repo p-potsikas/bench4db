@@ -1,4 +1,4 @@
-# 🧪 Database Benchmark Tool
+# 🧪 bench4db
 
 <p>
   <strong>An experimental benchmarking tool for databases</strong><br>
