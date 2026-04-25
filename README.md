@@ -201,6 +201,15 @@ The current release should be considered a first experimental version centered o
 - NoSQL databases
 - NewSQL databases
 
+## ⬇️ Getting the Project
+
+You can clone the repository from GitHub with:
+
+```bash
+git clone https://github.com/p-potsikas/bench4db.git
+cd bench4db
+```
+
 ## ▶️ Running the Application
 
 From the project root:

@@ -1,6 +1,7 @@
 import psycopg
 
 from benchmark_app.services.benchmark_engine import run_relational_benchmark
+from benchmark_app.services.remote_metrics import RemoteMetricsSampler
 from benchmark_app.services.workload import format_connection_target, validate_identifier
 
 
@@ -79,5 +80,20 @@ def run_benchmark(connection_config, workload_config, stop_event, metrics_queue)
             "message": f"Target table '{workload_config['workload']['target_object']}' is ready.",
         }
     )
+    remote_sampler = RemoteMetricsSampler.from_workload_config(workload_config)
+    if remote_sampler.enabled():
+        metrics_queue.put(
+            {
+                "type": "log",
+                "message": f"Remote metrics agent configured: {remote_sampler.agent_url}",
+            }
+        )
     with psycopg.connect(**connect_kwargs) as connection:
-        run_relational_benchmark(connection, "pyformat", workload_config, stop_event, metrics_queue)
+        run_relational_benchmark(
+            connection,
+            "pyformat",
+            workload_config,
+            stop_event,
+            metrics_queue,
+            metrics_sampler=remote_sampler.sample if remote_sampler.enabled() else None,
+        )

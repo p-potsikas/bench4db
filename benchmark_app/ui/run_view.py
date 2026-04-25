@@ -34,6 +34,11 @@ class RunBenchmarkView(ttk.Frame):
         self.p99_var = tk.StringVar(value="0.00 ms")
         self.cpu_var = tk.StringVar(value="0.00 %")
         self.ram_var = tk.StringVar(value="0.00 MB")
+        self.server_cpu_var = tk.StringVar(value="0.00 %")
+        self.server_ram_var = tk.StringVar(value="0.00 MB")
+        self.server_network_var = tk.StringVar(value="Rx 0.00 MB/s | Tx 0.00 MB/s")
+        self.server_disk_var = tk.StringVar(value="Read 0.00 MB/s | Write 0.00 MB/s")
+        self.server_pg_var = tk.StringVar(value="0")
         self.network_var = tk.StringVar(value="DB Rx 0.00 MB/s | DB Tx 0.00 MB/s")
         self.disk_var = tk.StringVar(value="Read 0.00 MB/s | Write 0.00 MB/s")
         self.remaining_var = tk.StringVar(value="0.00 s")
@@ -142,6 +147,11 @@ class RunBenchmarkView(ttk.Frame):
         self._metric_row(metrics, "p99 latency", ttk.Label(metrics, textvariable=self.p99_var, style="Card.TLabel"))
         self._metric_row(metrics, "CPU", ttk.Label(metrics, textvariable=self.cpu_var, style="Card.TLabel"))
         self._metric_row(metrics, "RAM", ttk.Label(metrics, textvariable=self.ram_var, style="Card.TLabel"))
+        self._metric_row(metrics, "Server CPU", ttk.Label(metrics, textvariable=self.server_cpu_var, style="Card.TLabel"))
+        self._metric_row(metrics, "Server RAM", ttk.Label(metrics, textvariable=self.server_ram_var, style="Card.TLabel"))
+        self._metric_row(metrics, "Server Net", ttk.Label(metrics, textvariable=self.server_network_var, style="Card.TLabel"))
+        self._metric_row(metrics, "Server Disk", ttk.Label(metrics, textvariable=self.server_disk_var, style="Card.TLabel"))
+        self._metric_row(metrics, "PG Connections", ttk.Label(metrics, textvariable=self.server_pg_var, style="Card.TLabel"))
         self._metric_row(metrics, "DB Traffic", ttk.Label(metrics, textvariable=self.network_var, style="Card.TLabel"))
         self._metric_row(metrics, "Disk I/O", ttk.Label(metrics, textvariable=self.disk_var, style="Card.TLabel"))
         self._metric_row(metrics, "Remaining time", ttk.Label(metrics, textvariable=self.remaining_var, style="Card.TLabel"))
@@ -270,6 +280,11 @@ class RunBenchmarkView(ttk.Frame):
         self.p99_var.set("0.00 ms")
         self.cpu_var.set("0.00 %")
         self.ram_var.set("0.00 MB")
+        self.server_cpu_var.set("0.00 %")
+        self.server_ram_var.set("0.00 MB")
+        self.server_network_var.set("Rx 0.00 MB/s | Tx 0.00 MB/s")
+        self.server_disk_var.set("Read 0.00 MB/s | Write 0.00 MB/s")
+        self.server_pg_var.set("0")
         self.network_var.set("DB Rx 0.00 MB/s | DB Tx 0.00 MB/s")
         self.disk_var.set("Read 0.00 MB/s | Write 0.00 MB/s")
         self.remaining_var.set(f"{float(self.workload_config['execution']['duration_seconds']):.2f} s")
@@ -314,6 +329,11 @@ class RunBenchmarkView(ttk.Frame):
                 self.p99_var.set(f"{item['p99_ms']:.2f} ms")
                 self.cpu_var.set(f"{item['cpu_percent']:.2f} %")
                 self.ram_var.set(f"{item['ram_mb']:.2f} MB")
+                self.server_cpu_var.set(f"{item.get('server_cpu_percent', 0.0):.2f} %")
+                self.server_ram_var.set(f"{item.get('server_ram_mb', 0.0):.2f} MB")
+                self.server_network_var.set(self._format_server_network(item))
+                self.server_disk_var.set(self._format_server_disk(item))
+                self.server_pg_var.set(str(item.get("server_pg_connections", 0)))
                 self.network_var.set(self._format_network(item))
                 self.disk_var.set(self._format_disk(item))
                 self.remaining_var.set(f"{item['remaining_seconds']:.2f} s")
@@ -335,6 +355,11 @@ class RunBenchmarkView(ttk.Frame):
                 self.p99_var.set(f"{item['p99_ms']:.2f} ms")
                 self.cpu_var.set(f"{item['cpu_percent']:.2f} %")
                 self.ram_var.set(f"{item['ram_mb']:.2f} MB")
+                self.server_cpu_var.set(f"{item.get('server_cpu_percent', 0.0):.2f} %")
+                self.server_ram_var.set(f"{item.get('server_ram_mb', 0.0):.2f} MB")
+                self.server_network_var.set(self._format_server_network(item))
+                self.server_disk_var.set(self._format_server_disk(item))
+                self.server_pg_var.set(str(item.get("server_pg_connections", 0)))
                 self.network_var.set(self._format_network(item))
                 self.disk_var.set(self._format_disk(item))
                 self.remaining_var.set("0.00 s")
@@ -382,6 +407,9 @@ class RunBenchmarkView(ttk.Frame):
                 f"Avg latency: {final_item['latency_ms']:.2f} ms\n"
                 f"p50/p95/p99: {final_item['p50_ms']:.2f} / {final_item['p95_ms']:.2f} / {final_item['p99_ms']:.2f} ms\n"
                 f"CPU/RAM: {final_item['cpu_percent']:.2f}% / {final_item['ram_mb']:.2f} MB\n"
+                f"Server CPU/RAM: {final_item.get('server_cpu_percent', 0.0):.2f}% / {final_item.get('server_ram_mb', 0.0):.2f} MB\n"
+                f"Server network: {self._format_server_network(final_item)}\n"
+                f"Server disk: {self._format_server_disk(final_item)}\n"
                 f"DB Traffic: {self._format_network(final_item)}\n"
                 f"Disk I/O: {self._format_disk(final_item)}"
             ),
@@ -406,6 +434,8 @@ class RunBenchmarkView(ttk.Frame):
         p95 = [item["p95_ms"] for item in metric_items]
         cpu = [item["cpu_percent"] for item in metric_items]
         ram = [item["ram_mb"] for item in metric_items]
+        server_cpu = [item.get("server_cpu_percent", 0.0) for item in metric_items]
+        server_ram = [item.get("server_ram_mb", 0.0) for item in metric_items]
         network_rx = [item.get("db_rx_mbps", 0.0) for item in metric_items]
         network_tx = [item.get("db_tx_mbps", 0.0) for item in metric_items]
         disk_read = [item.get("disk_read_mbps", 0.0) for item in metric_items]
@@ -425,6 +455,8 @@ class RunBenchmarkView(ttk.Frame):
         ax1.grid(True, alpha=0.2)
         ax2.plot(xs, cpu, label="CPU %", color="#1d6b43")
         ax2.plot(xs, ram, label="RAM MB", color="#5d7288")
+        ax2.plot(xs, server_cpu, label="Server CPU %", color="#b45309")
+        ax2.plot(xs, server_ram, label="Server RAM MB", color="#7c3aed")
         ax2.set_title("CPU and RAM")
         ax2.set_xlabel("Metric sample")
         ax2.set_ylabel("CPU % and MB")
@@ -453,6 +485,12 @@ class RunBenchmarkView(ttk.Frame):
     def _format_disk(self, item):
         return f"Read {item.get('disk_read_mbps', 0.0):.2f} MB/s | Write {item.get('disk_write_mbps', 0.0):.2f} MB/s"
 
+    def _format_server_network(self, item):
+        return f"Rx {item.get('server_network_rx_mbps', 0.0):.2f} MB/s | Tx {item.get('server_network_tx_mbps', 0.0):.2f} MB/s"
+
+    def _format_server_disk(self, item):
+        return f"Read {item.get('server_disk_read_mbps', 0.0):.2f} MB/s | Write {item.get('server_disk_write_mbps', 0.0):.2f} MB/s"
+
     def _show_report(self):
         metric_items = [item for item in self.metrics_history if item["type"] in {"metric", "done"}]
         if not metric_items:
@@ -467,6 +505,12 @@ class RunBenchmarkView(ttk.Frame):
             "p99_ms": sum(item["p99_ms"] for item in metric_items) / len(metric_items),
             "cpu_percent": sum(item["cpu_percent"] for item in metric_items) / len(metric_items),
             "ram_mb": sum(item["ram_mb"] for item in metric_items) / len(metric_items),
+            "server_cpu_percent": sum(item.get("server_cpu_percent", 0.0) for item in metric_items) / len(metric_items),
+            "server_ram_mb": sum(item.get("server_ram_mb", 0.0) for item in metric_items) / len(metric_items),
+            "server_network_rx_mbps": sum(item.get("server_network_rx_mbps", 0.0) for item in metric_items) / len(metric_items),
+            "server_network_tx_mbps": sum(item.get("server_network_tx_mbps", 0.0) for item in metric_items) / len(metric_items),
+            "server_disk_read_mbps": sum(item.get("server_disk_read_mbps", 0.0) for item in metric_items) / len(metric_items),
+            "server_disk_write_mbps": sum(item.get("server_disk_write_mbps", 0.0) for item in metric_items) / len(metric_items),
             "network_rx_mbps": sum(item.get("db_rx_mbps", 0.0) for item in metric_items) / len(metric_items),
             "network_tx_mbps": sum(item.get("db_tx_mbps", 0.0) for item in metric_items) / len(metric_items),
             "disk_read_mbps": sum(item.get("disk_read_mbps", 0.0) for item in metric_items) / len(metric_items),
@@ -486,6 +530,10 @@ class RunBenchmarkView(ttk.Frame):
             f"Average p99 latency: {averages['p99_ms']:.2f} ms\n"
             f"Average CPU: {averages['cpu_percent']:.2f} %\n"
             f"Average RAM: {averages['ram_mb']:.2f} MB\n"
+            f"Average server CPU: {averages['server_cpu_percent']:.2f} %\n"
+            f"Average server RAM: {averages['server_ram_mb']:.2f} MB\n"
+            f"Average server network: Rx {averages['server_network_rx_mbps']:.2f} MB/s | Tx {averages['server_network_tx_mbps']:.2f} MB/s\n"
+            f"Average server disk: Read {averages['server_disk_read_mbps']:.2f} MB/s | Write {averages['server_disk_write_mbps']:.2f} MB/s\n"
             f"Average DB traffic: Rx {averages['network_rx_mbps']:.2f} MB/s | Tx {averages['network_tx_mbps']:.2f} MB/s\n"
             f"Average disk I/O: Read {averages['disk_read_mbps']:.2f} MB/s | Write {averages['disk_write_mbps']:.2f} MB/s"
         )

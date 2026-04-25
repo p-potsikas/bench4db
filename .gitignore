@@ -1,0 +1,6 @@
+.venv/
+.venv_clt_py39_tk85/
+.idea/
+__pycache__/
+*.pyc
+.DS_Store

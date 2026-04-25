@@ -133,8 +133,11 @@ class WorkloadSetupView(ttk.Frame):
         self.cost_per_gb_var = tk.StringVar(value="0.00")
         self.cost_per_kops_var = tk.StringVar(value="0.00")
         self.avg_power_per_node_w_var = tk.StringVar(value="0")
+        self.remote_agent_url_var = tk.StringVar(value="")
+        self.remote_agent_token_var = tk.StringVar(value="")
 
         execution_data = self.initial_config.get("execution", {})
+        telemetry_data = self.initial_config.get("telemetry", {})
         self.client_threads_var.set(str(execution_data.get("client_threads", self.client_threads_var.get())))
         self.duration_seconds_var.set(str(execution_data.get("duration_seconds", self.duration_seconds_var.get())))
         self.ramp_up_seconds_var.set(str(execution_data.get("ramp_up_seconds", self.ramp_up_seconds_var.get())))
@@ -149,6 +152,8 @@ class WorkloadSetupView(ttk.Frame):
         self.cost_per_gb_var.set(str(execution_data.get("cost_per_gb", self.cost_per_gb_var.get())))
         self.cost_per_kops_var.set(str(execution_data.get("cost_per_1000_ops_sec", self.cost_per_kops_var.get())))
         self.avg_power_per_node_w_var.set(str(execution_data.get("avg_power_per_node_watts", self.avg_power_per_node_w_var.get())))
+        self.remote_agent_url_var.set(telemetry_data.get("agent_url", self.remote_agent_url_var.get()))
+        self.remote_agent_token_var.set(telemetry_data.get("agent_token", self.remote_agent_token_var.get()))
 
         self._add_labeled_widget(form, "Client threads", ttk.Entry(form, textvariable=self.client_threads_var))
         self._add_labeled_widget(form, "Duration (seconds)", ttk.Entry(form, textvariable=self.duration_seconds_var))
@@ -182,6 +187,8 @@ class WorkloadSetupView(ttk.Frame):
         self._add_labeled_widget(form, "Cost per GB", ttk.Entry(form, textvariable=self.cost_per_gb_var))
         self._add_labeled_widget(form, "Cost per 1,000 ops/sec", ttk.Entry(form, textvariable=self.cost_per_kops_var))
         self._add_labeled_widget(form, "Avg power per node (W)", ttk.Entry(form, textvariable=self.avg_power_per_node_w_var))
+        self._add_labeled_widget(form, "Remote agent URL", ttk.Entry(form, textvariable=self.remote_agent_url_var))
+        self._add_labeled_widget(form, "Remote agent token", ttk.Entry(form, textvariable=self.remote_agent_token_var, show="*"))
         self._add_labeled_widget(
             form,
             "Consistency level",
@@ -276,6 +283,8 @@ class WorkloadSetupView(ttk.Frame):
             self.cost_per_gb_var,
             self.cost_per_kops_var,
             self.avg_power_per_node_w_var,
+            self.remote_agent_url_var,
+            self.remote_agent_token_var,
         ]
         for variable in tracked_vars:
             variable.trace_add("write", lambda *_args: self._on_workload_field_change())
@@ -337,6 +346,10 @@ class WorkloadSetupView(ttk.Frame):
                     "remaining_time",
                     "cost_efficiency",
                 ],
+            },
+            "telemetry": {
+                "agent_url": self.remote_agent_url_var.get().strip(),
+                "agent_token": self.remote_agent_token_var.get().strip(),
             },
         }
 
